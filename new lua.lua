@@ -73,9 +73,10 @@ local vars = {
 
     phases = { -- will add state based soon
         moving = {
-            { 59,7 },
-            { 80,8 },
-            { 70,8 },
+            { 59,-4 },
+            { 81,3 },
+            { 74,1 },
+            { 77,7 },
         },
     },
 
@@ -347,7 +348,7 @@ local anti_aim = {
             local end_pos = { loc_pos[1] - ent_pos[1], loc_pos[2] - ent_pos[2], loc_pos[3] + 60 - ent_pos[3] };
     
             if math.abs(delta) < 50 then
-                vars.side[ent] = vars.angles.desync > 0 and -1 or 1
+                vars.side[ent] = vars.angles.desync > 0 and 1 or -1
                 -- seems better this way... cheats seem to bruteforce high degree jitter in a weird way compared to static
 
                 if ui.get(menu.visuals.logs) then
@@ -510,7 +511,7 @@ local anti_aim = {
                     ui.set(refs.antiaim.jitter[1], "center");
                     ui.set(refs.antiaim.body_yaw[1], "jitter");
                     ui.set(refs.antiaim.fake_limit, 60);
-                    ui.set(refs.antiaim.body_yaw[2], 0);
+                    ui.set(refs.antiaim.body_yaw[2], vars.hscount[vars.target] == 1 and 5 or 0);
 
                     if vars.antibrute.bruteforce == true then
                         ui.set(refs.antiaim.jitter[2], 0);
@@ -717,7 +718,7 @@ client.set_event_callback('player_hurt', function(e)
     local attacker, target = client.userid_to_entindex(e.attacker), client.userid_to_entindex(e.userid);
     if target == entity.get_local_player() and e.hitgroup == 1 then
         vars.hscount[attacker] = vars.hscount[attacker] + 1
-        if vars.hscount[attacker] > 3 then
+        if vars.hscount[attacker] > 4 then
             vars.hscount[attacker] = 1
         end
     end
