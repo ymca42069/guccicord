@@ -74,7 +74,6 @@ local vars = {
     phases = { -- will add state based soon
         moving = {
             { 59,-4 },
-            { 81,3 },
             { 74,1 },
             { 77,7 },
         },
@@ -89,6 +88,7 @@ local menu = {
     tab = ui.new_combobox(tab, container, ">> tab", "main", "visuals", "other"),
 
     main = {
+        abf = ui.new_checkbox(tab, container, ">> enable anti bruteforce"),
         dmnt = ui.new_checkbox(tab, container, ">> invert on dormancy"),
         extp = ui.new_checkbox(tab, container, ">> break extrapolation [dont working yet]"),
         lgt = ui.new_checkbox(tab, container, ">> legit aa on use"),
@@ -338,6 +338,7 @@ local utilities = {
 local anti_aim = { };
 local anti_aim = {
     bruteforce = function(c) -- recoded dis because it was inaccurate
+        if not ui.get(menu.main.abf) then return end
         local ent = client.userid_to_entindex(c.userid);
         if not entity.is_dormant(ent) and entity.is_enemy(ent) and entity.is_alive(entity.get_local_player()) then
             local ent_pos = { entity.get_prop(ent, "m_vecOrigin") };
@@ -347,8 +348,8 @@ local anti_aim = {
             local loc_pos = { entity.hitbox_position(entity.get_local_player(), 0) };
             local end_pos = { loc_pos[1] - ent_pos[1], loc_pos[2] - ent_pos[2], loc_pos[3] + 60 - ent_pos[3] };
     
-            if math.abs(delta) < 50 then
-                vars.side[ent] = vars.angles.desync > 0 and 1 or -1
+            if math.abs(delta) < 50 and math.abs(delta) > 9 then
+                vars.side[ent] = 1 -- WHY WAS I DOING ALL THIS DUMBASS SIDE DETECT SHIT ITS USELESS
                 -- seems better this way... cheats seem to bruteforce high degree jitter in a weird way compared to static
 
                 if ui.get(menu.visuals.logs) then
@@ -360,7 +361,7 @@ local anti_aim = {
                 if vars.miss[ent] > 3 then vars.miss[ent] = 1 end
 
                 vars.miss[ent] = vars.miss[ent] + 1;
-                vars.angle[ent] = delta * vars.side[ent] * 2; -- values were coming out too small // i think this makes aa a bit better
+                vars.angle[ent] = delta * vars.side[ent] * 3; -- values were coming out too small // i think this makes aa a bit better
                 vars.antibrute.timer[ent] = globals.curtime() + 5;
                 if math.abs(vars.angle[ent]) > 49 then
                     vars.angle[ent] = vars.side[ent] > 0 and 49 or -30
@@ -422,10 +423,10 @@ local anti_aim = {
             if vars.angle[vars.target] ~= nil then
                 if vars.angle[vars.target] > 0 then
                     vars.angles.right = vars.angle[vars.target];
-                    vars.angles.left = -30;
+                    vars.angles.left = -36;
                 elseif vars.angle[vars.target] < 0 then
                     vars.angles.left = vars.angle[vars.target];
-                    vars.angles.right = 30;
+                    vars.angles.right = 38;
                 end
             else
                 vars.angles.left = -36;
@@ -718,7 +719,7 @@ client.set_event_callback('player_hurt', function(e)
     local attacker, target = client.userid_to_entindex(e.attacker), client.userid_to_entindex(e.userid);
     if target == entity.get_local_player() and e.hitgroup == 1 then
         vars.hscount[attacker] = vars.hscount[attacker] + 1
-        if vars.hscount[attacker] > 4 then
+        if vars.hscount[attacker] > 3 then
             vars.hscount[attacker] = 1
         end
     end
